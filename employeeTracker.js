@@ -18,4 +18,49 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId + "\n");
+  // viewEmployees();
+  start();
 });
+
+function start() {
+  inquirer.prompt([
+    {
+      name: "userSelection",
+      message: "What would you like to do?",
+      type: "list",
+      choices: ["View current employees","View current departments","View current roles","Add a new employee","Add a new role","Add a new department"],
+    }
+
+  ])
+  .then((result) => {
+    console.log(result.userSelection);
+
+  })
+}
+
+// function start() {
+//   inquirer.prompt([
+
+//   ])
+//   .then((result) => {
+    
+//   })
+// }
+
+function viewEmployees() {
+  connection.query("SELECT * FROM employee", function (err, res) {
+    if (err) throw err;
+    console.table(res);
+    connection.end();
+  });
+}
+
+function viewDepartments() {}
+
+function viewRoles() {}
+
+function addEmployees() {}
+
+function addDepartments() {}
+
+function addRoles() {}
