@@ -30,3 +30,5 @@ CREATE TABLE role (
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES ("Rupert", "McInnes", 11, 101), ("Nelson", "Wong", 12, 101), ("Lisa", "Lionsworth", 13, 101), ("Mick", "Norton", 14, 102), ("Abigail", "Lawrence", 15, 103);
+
+SELECT * FROM employee;
