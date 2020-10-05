@@ -23,19 +23,41 @@ connection.connect(function (err) {
 });
 
 function start() {
-  inquirer.prompt([
-    {
-      name: "userSelection",
-      message: "What would you like to do?",
-      type: "list",
-      choices: ["View current employees","View current departments","View current roles","Add a new employee","Add a new role","Add a new department"],
-    }
-
-  ])
-  .then((result) => {
-    console.log(result.userSelection);
-
-  })
+  inquirer
+    .prompt([
+      {
+        name: "userSelection",
+        message: "What would you like to do?",
+        type: "list",
+        choices: [
+          "View current employees",
+          "View current departments",
+          "View current roles",
+          "Add a new employee",
+          "Add a new role",
+          "Add a new department",
+          "Exit",
+        ],
+      },
+    ])
+    .then(({ userSelection }) => {
+      console.log(userSelection);
+      if (userSelection === "View current employees") {
+        viewEmployees();
+      } else if (userSelection === "View current departments") {
+        viewDepartments();
+      } else if (userSelection === "View current roles") {
+        viewRoles();
+      } else if (userSelection === "Add a new employee") {
+        connection.end();
+      } else if (userSelection === "Add a new role") {
+        connection.end();
+      } else if (userSelection === "Add a new department") {
+        connection.end();
+      } else {
+        connection.end();
+      }
+    });
 }
 
 // function start() {
@@ -43,7 +65,7 @@ function start() {
 
 //   ])
 //   .then((result) => {
-    
+
 //   })
 // }
 
@@ -51,11 +73,17 @@ function viewEmployees() {
   connection.query("SELECT * FROM employee", function (err, res) {
     if (err) throw err;
     console.table(res);
-    connection.end();
+    start();
   });
 }
 
-function viewDepartments() {}
+function viewDepartments() {
+  connection.query("SELECT * FROM department", function (err, res) {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+}
 
 function viewRoles() {}
 
