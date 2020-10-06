@@ -49,7 +49,7 @@ function start() {
       } else if (userSelection === "View current roles") {
         viewRoles();
       } else if (userSelection === "Add a new employee") {
-        connection.end();
+        addEmployee();
       } else if (userSelection === "Add a new role") {
         connection.end();
       } else if (userSelection === "Add a new department") {
@@ -98,8 +98,62 @@ function viewRoles() {
   });
 }
 
-function addEmployees() {}
+function defineManager() {
+
+
+}
+
+function addEmployee() {
+  inquirer
+    .prompt([
+      {
+        name: "firstName",
+        message: "Employee first name?",
+        type: "input"
+      },
+      {
+        name: "lastName",
+        message: "Employee last name?",
+        type: "input"
+      },
+      {
+        name: "roleId",
+        message: "Employee role ID number?",
+        type: "input"
+      },
+      {
+        name: "managerId",
+        message: "Manager ID number? (leave blank if none)",
+        type: "input"
+      }
+    ])
+    .then(({firstName, lastName, roleId, managerId}) => {
+      console.log(firstName, lastName, roleId, managerId);
+      if (managerId === "") {
+        managerId = null;
+      }
+      connection.query(
+        "INSERT INTO employee SET ?",
+        {
+          first_name: firstName,
+          last_name: lastName,
+          role_id: roleId,
+          manager_id: managerId
+        },
+        function(err, res) {
+          if (err) throw err;
+          console.log(res.affectedRows + " employee added!\n");
+          start();
+        }
+      );
+
+  
+    });
+}
 
 function addDepartments() {}
 
 function addRoles() {}
+
+
+
