@@ -1,7 +1,12 @@
-var mysql = require("mysql");
+const mysql = require("mysql");
 const inquirer = require("inquirer");
 
-var connection = mysql.createConnection({
+let rolesArray = [];
+let employeesArray = [];
+
+
+
+const connection = mysql.createConnection({
   host: "localhost",
 
   // Your port; if not 3306
@@ -71,10 +76,11 @@ function start() {
 function viewEmployees() {
   connection.query(
     `
-    SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary, employee.manager_id 
+    SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary, concat(manager.first_name , " " , manager.last_name) AS "manager"
     FROM employee
     INNER JOIN role ON employee.role_id = role.id
-    INNER JOIN department ON role.department_id = department.id; `,
+    INNER JOIN department ON role.department_id = department.id
+    LEFT JOIN employee AS manager ON employee.manager_id = manager.id; `,
     (err, res) => {
     if (err) throw err;
     console.table(res);
@@ -100,38 +106,38 @@ function viewRoles() {
 
 function defineManager() {
 
-
 }
 
 function addEmployee() {
+  checkRoles();
   inquirer
     .prompt([
       {
         name: "firstName",
-        message: "Employee first name?",
-        type: "input"
+        type: "input",
+        message: "Employee first name?"
       },
       {
         name: "lastName",
-        message: "Employee last name?",
-        type: "input"
+        type: "input",
+        message: "Employee last name?"
       },
       {
         name: "roleId",
-        message: "Employee role ID number?",
-        type: "input"
+        type: "input",
+        message: "Employee role number?",
       },
       {
         name: "managerId",
-        message: "Manager ID number? (leave blank if none)",
-        type: "input"
+        type: "input",
+        message: "Manager ID number? (leave blank if none)"
       }
     ])
     .then(({firstName, lastName, roleId, managerId}) => {
       console.log(firstName, lastName, roleId, managerId);
-      if (managerId === "") {
+      if (managerId == "") {
         managerId = null;
-      }
+      } 
       connection.query(
         "INSERT INTO employee SET ?",
         {
@@ -155,5 +161,57 @@ function addDepartments() {}
 
 function addRoles() {}
 
+function checkRoles() {
+  connection.query('SELECT * FROM role', (err, results) => {
+    if (err) throw err;
+    for (var i = 0; i < results.length; i++) {
+      rolesArray.push(results[i].title);
+    }
+  })
+}
+
+function checkEmployees() {
+  connection.query('SELECT * FROM employee', (err, results) => {
+    if (err) throw err;
+    for (var i = 0; i < results.length; i++) {
+      rolesArray.push(results[i].title);
+    }
+  })
+}
 
 
+
+// let roleList = [
+//   {
+//     roleNum: 1,
+//     roleTitle: "Salesperson"
+//   },
+//   {
+//     roleNum: 2,
+//     roleTitle: "Sales Lead"
+//   },
+//   {
+//     roleNum: 3,
+//     roleTitle: "Software Engineer"
+//   },
+//   {
+//     roleNum: 4,
+//     roleTitle: "Software Lead"
+//   },
+//   {
+//     roleNum: 5,
+//     roleTitle: "Accountant"
+//   },
+//   {
+//     roleNum: 6,
+//     roleTitle: "Account Manager"
+//   },
+//   {
+//     roleNum: 7,
+//     roleTitle: "Lawyer"
+//   },
+//   {
+//     roleNum: 8,
+//     roleTitle: "Legal Team Lead"
+//   },
+// ]
