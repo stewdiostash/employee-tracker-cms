@@ -60,15 +60,6 @@ function start() {
     });
 }
 
-// function start() {
-//   inquirer.prompt([
-
-//   ])
-//   .then((result) => {
-
-//   })
-// }
-
 function viewEmployees() {
   connection.query("SELECT * FROM employee", function (err, res) {
     if (err) throw err;
@@ -76,6 +67,19 @@ function viewEmployees() {
     start();
   });
 }
+
+// function viewEmployees() {
+//   connection.query(
+//     `
+//     SELECT employee.id, employee.first_name, employee.last_name, role.department_id, role.title, role.salary, employee.manager_id 
+//     FROM employee
+//     LEFT JOIN role`,
+//     (err, res) => {
+//     if (err) throw err;
+//     console.table(res);
+//     start();
+//   });
+// }
 
 function viewDepartments() {
   connection.query("SELECT * FROM department", function (err, res) {
@@ -85,7 +89,13 @@ function viewDepartments() {
   });
 }
 
-function viewRoles() {}
+function viewRoles() {
+  connection.query("SELECT * FROM role", function (err, res) {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+}
 
 function addEmployees() {}
 
