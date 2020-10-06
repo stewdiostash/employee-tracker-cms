@@ -60,26 +60,27 @@ function start() {
     });
 }
 
-function viewEmployees() {
-  connection.query("SELECT * FROM employee", function (err, res) {
-    if (err) throw err;
-    console.table(res);
-    start();
-  });
-}
-
 // function viewEmployees() {
-//   connection.query(
-//     `
-//     SELECT employee.id, employee.first_name, employee.last_name, role.department_id, role.title, role.salary, employee.manager_id 
-//     FROM employee
-//     LEFT JOIN role`,
-//     (err, res) => {
+//   connection.query("SELECT * FROM employee", function (err, res) {
 //     if (err) throw err;
 //     console.table(res);
 //     start();
 //   });
 // }
+
+function viewEmployees() {
+  connection.query(
+    `
+    SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary, employee.manager_id 
+    FROM employee
+    INNER JOIN role ON employee.role_id = role.id
+    INNER JOIN department ON role.department_id = department.id; `,
+    (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+}
 
 function viewDepartments() {
   connection.query("SELECT * FROM department", function (err, res) {
