@@ -2,9 +2,8 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 
 let rolesArray = [];
+let deptsArray = [];
 let employeesArray = [];
-
-
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -56,9 +55,9 @@ function start() {
       } else if (userSelection === "Add a new employee") {
         addEmployee();
       } else if (userSelection === "Add a new role") {
-        connection.end();
+        addRole();
       } else if (userSelection === "Add a new department") {
-        connection.end();
+        addDepartment();
       } else {
         connection.end();
       }
@@ -82,10 +81,11 @@ function viewEmployees() {
     INNER JOIN department ON role.department_id = department.id
     LEFT JOIN employee AS manager ON employee.manager_id = manager.id; `,
     (err, res) => {
-    if (err) throw err;
-    console.table(res);
-    start();
-  });
+      if (err) throw err;
+      console.table(res);
+      start();
+    }
+  );
 }
 
 function viewDepartments() {
@@ -104,23 +104,18 @@ function viewRoles() {
   });
 }
 
-function defineManager() {
-
-}
-
 function addEmployee() {
-  checkRoles();
   inquirer
     .prompt([
       {
         name: "firstName",
         type: "input",
-        message: "Employee first name?"
+        message: "Employee first name?",
       },
       {
         name: "lastName",
         type: "input",
-        message: "Employee last name?"
+        message: "Employee last name?",
       },
       {
         name: "roleId",
@@ -130,56 +125,120 @@ function addEmployee() {
       {
         name: "managerId",
         type: "input",
-        message: "Manager ID number? (leave blank if none)"
-      }
+        message: "Manager ID number? (leave blank if none)",
+      },
     ])
-    .then(({firstName, lastName, roleId, managerId}) => {
+    .then(({ firstName, lastName, roleId, managerId }) => {
       console.log(firstName, lastName, roleId, managerId);
       if (managerId == "") {
         managerId = null;
-      } 
+      }
       connection.query(
         "INSERT INTO employee SET ?",
         {
           first_name: firstName,
           last_name: lastName,
           role_id: roleId,
-          manager_id: managerId
+          manager_id: managerId,
         },
-        function(err, res) {
+        function (err, res) {
           if (err) throw err;
           console.log(res.affectedRows + " employee added!\n");
           start();
         }
       );
-
-  
     });
 }
 
-function addDepartments() {}
+function addRole() {
+  checkDepts();
+  inquirer
+    .prompt([
+      {
+        name: "roleTitle",
+        type: "input",
+        message: "Role title?",
+      },
+      {
+        name: "roleSalary",
+        type: "input",
+        message: "Role salary?",
+      },
+      {
+        name: "roleDept",
+        type: "input",
+        message: "Role department code?"
+      }
+    ])
+    .then(({roleTitle, roleSalary, roleDept}) => {
+      console.log(roleDept);
+      connection.query(
+        "INSERT INTO role SET ?",
+        {
+          title: roleTitle,
+          salary: roleSalary,
+          department_id: roleDept
+        },
+        function (err, res) {
+          if (err) throw err;
+          console.log(res.affectedRows + " role added!\n");
+          start();
+        }
+      );
+    });
+}
 
-function addRoles() {}
+function addDepartment() {
+  inquirer
+    .prompt([
+      {
+        name: "deptName",
+        type: "input",
+        message: "Department name?"
+      },
+    ])
+    .then(({ deptName }) => {
+      console.log(deptName);
+      connection.query(
+        "INSERT INTO department SET ?",
+        {
+          name: deptName,
+        },
+        function (err, res) {
+          if (err) throw err;
+          console.log(res.affectedRows + " department added!\n");
+          start();
+        }
+      );
+    });
+}
 
 function checkRoles() {
-  connection.query('SELECT * FROM role', (err, results) => {
+  connection.query("SELECT * FROM role", (err, results) => {
     if (err) throw err;
     for (var i = 0; i < results.length; i++) {
       rolesArray.push(results[i].title);
     }
-  })
+  });
 }
 
 function checkEmployees() {
-  connection.query('SELECT * FROM employee', (err, results) => {
+  connection.query("SELECT * FROM employee", (err, results) => {
     if (err) throw err;
     for (var i = 0; i < results.length; i++) {
-      rolesArray.push(results[i].title);
+      employeesArray.push(results[i].last_name);
     }
-  })
+  });
 }
 
-
+function checkDepts() {
+  connection.query("SELECT * FROM department", (err, results) => {
+    if (err) throw err;
+    for (var i = 0; i < results.length; i++) {
+      deptsArray.push(results[i].name);
+    }
+  });
+}
 
 // let roleList = [
 //   {
