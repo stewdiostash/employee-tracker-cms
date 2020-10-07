@@ -102,107 +102,55 @@ function viewByDepartment() {
     ])
     .then(({viewDept}) => {
       console.log(viewDept);
-      if (viewDept === "Sales"){
-        viewSalesTeam();
-      } else if (viewDept === "Engineering") {
-        viewEngineeringTeam();
-      } else if (viewDept === "Finance") {
-        viewFinanceTeam();
-      } else if (viewDept === "Legal") {
-        viewLegalTeam();
-      } else {
-        viewDesignTeam();
-      }
+      connection.query(
+        `
+        SELECT employee.id, employee.first_name, employee.last_name, role.title
+        FROM employee
+        INNER JOIN role ON employee.role_id = role.id
+        INNER JOIN department ON role.department_id = department.id
+        WHERE department.name in ("${viewDept}"); `,
+        (err, res) => {
+          if (err) throw err;
+          console.table(res);
+          start();
+        }
+      );
     })
   })
 }
 
-function viewSalesTeam() {
-  connection.query(
-    `
-    SELECT employee.id, employee.first_name, employee.last_name, role.title
-    FROM employee
-    INNER JOIN role ON employee.role_id = role.id
-    INNER JOIN department ON role.department_id = department.id
-    WHERE role.title in ("Sales Lead","Salesperson"); `,
-    (err, res) => {
-      if (err) throw err;
-      console.table(res);
-      start();
-    }
-  );
-}
-
-function viewEngineeringTeam() {
-  connection.query(
-    `
-    SELECT employee.id, employee.first_name, employee.last_name, role.title
-    FROM employee
-    INNER JOIN role ON employee.role_id = role.id
-    INNER JOIN department ON role.department_id = department.id
-    WHERE role.title in ("Software Engineer","Software Lead"); `,
-    (err, res) => {
-      if (err) throw err;
-      console.table(res);
-      start();
-    }
-  );
-}
-
-function viewFinanceTeam() {
-  connection.query(
-    `
-    SELECT employee.id, employee.first_name, employee.last_name, role.title
-    FROM employee
-    INNER JOIN role ON employee.role_id = role.id
-    INNER JOIN department ON role.department_id = department.id
-    WHERE role.title in ("Accountant","Account Manager"); `,
-    (err, res) => {
-      if (err) throw err;
-      console.table(res);
-      start();
-    }
-  );
-}
-
-function viewLegalTeam() {
-  connection.query(
-    `
-    SELECT employee.id, employee.first_name, employee.last_name, role.title
-    FROM employee
-    INNER JOIN role ON employee.role_id = role.id
-    INNER JOIN department ON role.department_id = department.id
-    WHERE role.title in ("Lawyer","Legal Team Lead"); `,
-    (err, res) => {
-      if (err) throw err;
-      console.table(res);
-      start();
-    }
-  );
-}
-
-function viewDesignTeam() {
-  connection.query(
-    `
-    SELECT employee.id, employee.first_name, employee.last_name, role.title
-    FROM employee
-    INNER JOIN role ON employee.role_id = role.id
-    INNER JOIN department ON role.department_id = department.id
-    WHERE role.title in ("Product Designer","Design Director"); `,
-    (err, res) => {
-      if (err) throw err;
-      console.table(res);
-      start();
-    }
-  );
-}
-
-function viewRoles() {
-  connection.query("SELECT * FROM role", function (err, res) {
+function viewByRole() {
+  connection.query("SELECT * FROM role", (err, results) => {
     if (err) throw err;
-    console.table(res);
-    start();
-  });
+    let rolesArray = [];
+    for (var i = 0; i < results.length; i++) {
+      rolesArray.push(results[i].title);
+    }
+    inquirer.prompt([
+      {
+        name: "viewRole",
+        type: "list",
+        message: "Select a role to view",
+        choices: rolesArray
+      },
+    ])
+    .then(({viewRole}) => {
+      console.log(viewRole);
+      connection.query(
+        `
+        SELECT employee.id, employee.first_name, employee.last_name, role.title
+        FROM employee
+        INNER JOIN role ON employee.role_id = role.id
+        INNER JOIN department ON role.department_id = department.id
+        WHERE role.title in ("${viewRole}"); `,
+        (err, res) => {
+          if (err) throw err;
+          console.table(res);
+          start();
+        }
+      );
+    })
+  })
 }
 
 function addEmployee() {
@@ -314,65 +262,30 @@ function addDepartment() {
     });
 }
 
-function checkRoles() {
-  connection.query("SELECT * FROM role", (err, results) => {
-    if (err) throw err;
-    for (var i = 0; i < results.length; i++) {
-      rolesArray.push(results[i].title);
-    }
-  });
-}
+// function checkRoles() {
+//   connection.query("SELECT * FROM role", (err, results) => {
+//     if (err) throw err;
+//     for (var i = 0; i < results.length; i++) {
+//       rolesArray.push(results[i].title);
+//     }
+//   });
+// }
 
-function checkEmployees() {
-  connection.query("SELECT * FROM employee", (err, results) => {
-    if (err) throw err;
-    for (var i = 0; i < results.length; i++) {
-      employeesArray.push(results[i].last_name);
-    }
-  });
-}
+// function checkEmployees() {
+//   connection.query("SELECT * FROM employee", (err, results) => {
+//     if (err) throw err;
+//     for (var i = 0; i < results.length; i++) {
+//       employeesArray.push(results[i].last_name);
+//     }
+//   });
+// }
 
-function checkDepts() {
-  connection.query("SELECT * FROM department", (err, results) => {
-    if (err) throw err;
-    for (var i = 0; i < results.length; i++) {
-      deptsArray.push(results[i].name);
-    }
-    console.log(deptsArray)
-  });
-}
-
-// let roleList = [
-//   {
-//     roleNum: 1,
-//     roleTitle: "Salesperson"
-//   },
-//   {
-//     roleNum: 2,
-//     roleTitle: "Sales Lead"
-//   },
-//   {
-//     roleNum: 3,
-//     roleTitle: "Software Engineer"
-//   },
-//   {
-//     roleNum: 4,
-//     roleTitle: "Software Lead"
-//   },
-//   {
-//     roleNum: 5,
-//     roleTitle: "Accountant"
-//   },
-//   {
-//     roleNum: 6,
-//     roleTitle: "Account Manager"
-//   },
-//   {
-//     roleNum: 7,
-//     roleTitle: "Lawyer"
-//   },
-//   {
-//     roleNum: 8,
-//     roleTitle: "Legal Team Lead"
-//   },
-// ]
+// function checkDepts() {
+//   connection.query("SELECT * FROM department", (err, results) => {
+//     if (err) throw err;
+//     for (var i = 0; i < results.length; i++) {
+//       deptsArray.push(results[i].name);
+//     }
+//     console.log(deptsArray)
+//   });
+// }
