@@ -1,9 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 
-let rolesArray = [];
-let deptsArray = [];
-let employeesArray = [];
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -35,8 +32,8 @@ function start() {
         type: "list",
         choices: [
           "View current employees",
-          "View current departments",
-          "View current roles",
+          "View employees by department",
+          "View employees by role",
           "Add a new employee",
           "Add a new role",
           "Add a new department",
@@ -48,10 +45,10 @@ function start() {
       console.log(userSelection);
       if (userSelection === "View current employees") {
         viewEmployees();
-      } else if (userSelection === "View current departments") {
-        viewDepartments();
-      } else if (userSelection === "View current roles") {
-        viewRoles();
+      } else if (userSelection === "View employees by department") {
+        viewByDepartment();
+      } else if (userSelection === "View employees by role") {
+        viewByRole();
       } else if (userSelection === "Add a new employee") {
         addEmployee();
       } else if (userSelection === "Add a new role") {
@@ -88,12 +85,116 @@ function viewEmployees() {
   );
 }
 
-function viewDepartments() {
-  connection.query("SELECT * FROM department", function (err, res) {
+function viewByDepartment() {
+  connection.query("SELECT * FROM department", (err, results) => {
     if (err) throw err;
-    console.table(res);
-    start();
-  });
+    var deptsArray = [];
+    for (var i = 0; i < results.length; i++) {
+      deptsArray.push(results[i].name);
+    }
+    inquirer.prompt([
+      {
+        name: "viewDept",
+        type: "list",
+        message: "Select a department to view",
+        choices: deptsArray
+      },
+    ])
+    .then(({viewDept}) => {
+      console.log(viewDept);
+      if (viewDept === "Sales"){
+        viewSalesTeam();
+      } else if (viewDept === "Engineering") {
+        viewEngineeringTeam();
+      } else if (viewDept === "Finance") {
+        viewFinanceTeam();
+      } else if (viewDept === "Legal") {
+        viewLegalTeam();
+      } else {
+        viewDesignTeam();
+      }
+    })
+  })
+}
+
+function viewSalesTeam() {
+  connection.query(
+    `
+    SELECT employee.id, employee.first_name, employee.last_name, role.title
+    FROM employee
+    INNER JOIN role ON employee.role_id = role.id
+    INNER JOIN department ON role.department_id = department.id
+    WHERE role.title in ("Sales Lead","Salesperson"); `,
+    (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      start();
+    }
+  );
+}
+
+function viewEngineeringTeam() {
+  connection.query(
+    `
+    SELECT employee.id, employee.first_name, employee.last_name, role.title
+    FROM employee
+    INNER JOIN role ON employee.role_id = role.id
+    INNER JOIN department ON role.department_id = department.id
+    WHERE role.title in ("Software Engineer","Software Lead"); `,
+    (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      start();
+    }
+  );
+}
+
+function viewFinanceTeam() {
+  connection.query(
+    `
+    SELECT employee.id, employee.first_name, employee.last_name, role.title
+    FROM employee
+    INNER JOIN role ON employee.role_id = role.id
+    INNER JOIN department ON role.department_id = department.id
+    WHERE role.title in ("Accountant","Account Manager"); `,
+    (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      start();
+    }
+  );
+}
+
+function viewLegalTeam() {
+  connection.query(
+    `
+    SELECT employee.id, employee.first_name, employee.last_name, role.title
+    FROM employee
+    INNER JOIN role ON employee.role_id = role.id
+    INNER JOIN department ON role.department_id = department.id
+    WHERE role.title in ("Lawyer","Legal Team Lead"); `,
+    (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      start();
+    }
+  );
+}
+
+function viewDesignTeam() {
+  connection.query(
+    `
+    SELECT employee.id, employee.first_name, employee.last_name, role.title
+    FROM employee
+    INNER JOIN role ON employee.role_id = role.id
+    INNER JOIN department ON role.department_id = department.id
+    WHERE role.title in ("Product Designer","Design Director"); `,
+    (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      start();
+    }
+  );
 }
 
 function viewRoles() {
@@ -167,17 +268,17 @@ function addRole() {
       {
         name: "roleDept",
         type: "input",
-        message: "Role department code?"
-      }
+        message: "Role department code?",
+      },
     ])
-    .then(({roleTitle, roleSalary, roleDept}) => {
+    .then(({ roleTitle, roleSalary, roleDept }) => {
       console.log(roleDept);
       connection.query(
         "INSERT INTO role SET ?",
         {
           title: roleTitle,
           salary: roleSalary,
-          department_id: roleDept
+          department_id: roleDept,
         },
         function (err, res) {
           if (err) throw err;
@@ -194,7 +295,7 @@ function addDepartment() {
       {
         name: "deptName",
         type: "input",
-        message: "Department name?"
+        message: "Department name?",
       },
     ])
     .then(({ deptName }) => {
@@ -237,6 +338,7 @@ function checkDepts() {
     for (var i = 0; i < results.length; i++) {
       deptsArray.push(results[i].name);
     }
+    console.log(deptsArray)
   });
 }
 
