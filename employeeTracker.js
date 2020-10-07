@@ -230,8 +230,8 @@ function updateEmployeeRole() {
         ],
         function (err, res) {
           if (err) throw err;
-          console.log(res);
-          // console.log(res.affectedRows + " updated!\n");
+          // console.log(res);
+          console.log(res.affectedRows + " updated!\n");
           start();
         }
       );
