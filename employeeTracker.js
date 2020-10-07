@@ -230,7 +230,9 @@ function updateEmployeeRole() {
         ],
         function (err, res) {
           if (err) throw err;
-          console.table(res);
+          console.log(res);
+          // console.log(res.affectedRows + " updated!\n");
+          start();
         }
       );
     });
